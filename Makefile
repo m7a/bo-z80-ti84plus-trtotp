@@ -7,6 +7,7 @@ PROGRAM = trtotp
 
 compile: tios_crt0.rel
 	sdcc --no-std-crt0 --code-loc 40347 --data-loc 0 --std-sdcc99 -mz80 \
+		--opt-code-size \
 		--reserve-regs-iy -o $(PROGRAM).ihx tios_crt0.rel $(PROGRAM).c
 	objcopy -I ihex -O binary $(PROGRAM).ihx $(PROGRAM).bin
 	$(BINPACK8X) $(PROGRAM).bin

@@ -1,11 +1,19 @@
-/* TODO SMALL PROBLEM SEEMS ALL PRETTY OK BUT UNABLE TO ENABLE ALL BECAUSE ITS TOO LARGE FOR THE CALCULATOR? */
+/*
+
+TODO USING NEW HASHING LIBRARY SEEMS TO WORK -- NOW CLEAN UP THE MESS AND TEST EXTENSIVELY
+
+Next substeps:
+ - Fix copyright screen
+ - Enable pagination (test with 10 entries seemed to work!)
+ - Write encryption aux tools
+*/
 
 #include <string.h>
 
 #include "ti84plus.h"
 #include "calculator_routines.h"
-#include "teeny_sha1.h"
-#include "hmac.h"
+#include "sha1.h"
+#include "hmac-sha1.h"
 #include "hotp.h"
 
 /* -- Structures -- */
@@ -39,10 +47,8 @@ static const struct db_entry DATABASE[] = {
 #define MD5BYTES          16
 
 /* -- Declarations -- */
-/*
 static unsigned char set_decryption_key(unsigned char* key);
 static unsigned char screen_1_get_password(unsigned char* password);
-*/
 static void screen_2_main_select_token(unsigned char* key);
 static void display_digits(unsigned long val, unsigned char digits);
 
@@ -58,10 +64,8 @@ void main()
 
 	callcalc_clear_lcd_full();
 
-#if 0
 	if(!set_decryption_key(decryption_key))
 		return; /* user cancelled */
-#endif
 
 	/* TODO For now tread data as unencrypted */
 	memset(decryption_key, 0, MAXKEYLENGTH);
@@ -69,7 +73,6 @@ void main()
 	screen_2_main_select_token(decryption_key);
 }
 
-#if 0
 static unsigned char set_decryption_key(unsigned char* key)
 {
 	unsigned char* inptr;
@@ -152,7 +155,6 @@ static unsigned char screen_1_get_password(unsigned char* password)
 
 	return idx;
 }
-#endif
 
 static void screen_2_main_select_token(unsigned char* key)
 {
@@ -190,7 +192,6 @@ static void screen_2_main_select_token(unsigned char* key)
 				cursor--;
 			break;
 		case kEnter:
-			/* NOW DISPLAY TOTP */
 			if(cursor == 0)
 				screen_4_info();
 			else if(cursor <= NUM_DB_ENTRIES)
@@ -230,7 +231,6 @@ static void display_digits(unsigned long val, unsigned char digits)
 static void screen_3_totp(unsigned char entryidx, unsigned char* key_xor)
 {
 	unsigned char use_key[MAXKEYLENGTH];
-	unsigned char i;
 
 	unsigned long update_step = 0;
 	unsigned char key;
@@ -241,8 +241,8 @@ static void screen_3_totp(unsigned char entryidx, unsigned char* key_xor)
 	curCol = 0;
 	callcalc_puts(DATABASE[entryidx].name);
 
-	for(i = 0; i < MAXKEYLENGTH; i++)
-		use_key[i] = (key_xor[i] ^ DATABASE[entryidx].key[i]);
+	memcpy(use_key, key_xor, MAXKEYLENGTH);
+	memxor(use_key, DATABASE[entryidx].key, MAXKEYLENGTH);
 
 	curRow = 1;
 	curCol = 0;
@@ -290,14 +290,14 @@ static void screen_4_info()
 
 	/* Cannot use last character because otherwise it would be scrolling */
 	const char* text[8] = {
-		"MIT LICENSE, Cop", /* 1 */
-		"yright (c) 2016 ", /* 2 */
-		"CTrabant, Copyri", /* 3 */
-		"ght (c) 2020 Jac", /* 4 */
-		"ob Shin (deuteri", /* 5 */
-		"umoxide), Copyri", /* 6 */
-		"ght (c) 2021 Ma_", /* 7 */
-		"Sys.ma (0:Back)",  /* 8 */
+		"INF0", /* 1 */
+		"INF1", /* 2 */
+		"INF2", /* 3 */
+		"INF3", /* 4 */
+		"INF4", /* 5 */
+		"INF5", /* 6 */
+		"INF6", /* 7 */
+		"INF7", /* 8 */
 	};
 
 	callcalc_clear_lcd_full();
@@ -315,6 +315,6 @@ static void screen_4_info()
 #include "calculator_routines.c"
 
 /* -- Crypto Routines -- */
-#include "teeny_sha1.c"
-#include "hmac.c"
+#include "sha1.c"
+#include "hmac-sha1.c"
 #include "hotp.c"

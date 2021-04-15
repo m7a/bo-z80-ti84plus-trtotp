@@ -37,7 +37,8 @@ static void hotp(unsigned char* key, unsigned char keylen,
 	bytes[6] = (count >>  8) & 0xff;
 	bytes[7] = (count      ) & 0xff;
 
-	hmac_sha1(digest, key, bytes, keylen);
+	hmac_sha1(key, keylen, bytes, sizeof(bytes), digest);
+	/*hmac_sha1(digest, key, bytes, keylen);*/
 
 	/*
 	 * Truncate digest based on the RFC4226 Standard
