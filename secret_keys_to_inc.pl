@@ -25,9 +25,21 @@ delete $ini->{global};
 # Currently hard-coded length of 20. See C code for the implementation that
 # can do an arbitrary width.
 my $MAXKEYLENGTH = 20;
-my $hash1 = md5($password);
+my @paddingbytes = (
+	# random bytes / aligned with C code
+	0xc5, 0xf7, 0x40, 0xd8, 0x1f, 0xda, 0x49, 0xb6,
+	0xe6, 0x1b, 0x5c, 0xee, 0xbd, 0x29, 0xbb, 0xa5,
+	0x89, 0x99, 0x93, 0x8f, 0x4b, 0x8b, 0xca, 0x40,
+	0xbb, 0x5a, 0xb4, 0x05, 0x1b, 0x9a, 0xe7, 0x4d
+);
+my $paddingstr = pack("C*", @paddingbytes);
+my $pwin  = $password.substr($paddingstr, length($password));
+my $hash1 = md5($pwin);
 my $hash2 = md5($hash1);
 my $toxor = $hash1.substr($hash2, 0, $MAXKEYLENGTH - 16);
+
+my @chars = unpack("C*", substr($toxor, 0, 1));
+print "/* ".$chars[0]." */\n";
 
 for my $entry (sort keys %{$ini}) {
 	my $decoded = MIME::Base32::decode_base32($ini->{$entry}->{key});

@@ -40,9 +40,18 @@ static const struct db_entry DATABASE[] = {
 
 #define SCREEN_HEIGHT      8
 #define MAXPASSWORDLENGTH 14
+#define PASSWORDMEMSZ     32
 #define MD5BYTES          16
 
 #define ENTRIES_PER_PAGE   (SCREEN_HEIGHT - 1)
+
+/* random bytes, aligned with Perl code */
+const unsigned char PASSWORDPADDINGBYTES[PASSWORDMEMSZ] = {
+	0xc5, 0xf7, 0x40, 0xd8, 0x1f, 0xda, 0x49, 0xb6,
+	0xe6, 0x1b, 0x5c, 0xee, 0xbd, 0x29, 0xbb, 0xa5,
+	0x89, 0x99, 0x93, 0x8f, 0x4b, 0x8b, 0xca, 0x40,
+	0xbb, 0x5a, 0xb4, 0x05, 0x1b, 0x9a, 0xe7, 0x4d
+};
 
 /* -- Declarations -- */
 static unsigned char set_decryption_key(unsigned char* key);
@@ -65,9 +74,6 @@ void main()
 	if(!set_decryption_key(decryption_key))
 		return; /* user cancelled */
 
-	/* TODO For now tread data as unencrypted */
-	memset(decryption_key, 0, MAXKEYLENGTH);
-
 	screen_2_main_select_token(decryption_key);
 }
 
@@ -79,10 +85,12 @@ static unsigned char set_decryption_key(unsigned char* key)
 	unsigned char numcpy;
 
 	/* this string will not be 0-terminated */
-	unsigned char password[MAXPASSWORDLENGTH];
+	unsigned char password[PASSWORDMEMSZ];
+	unsigned char pwlen = PASSWORDMEMSZ;
 
-	unsigned char pwlen = screen_1_get_password(password);
-	if(pwlen == 0)
+	memcpy(password, PASSWORDPADDINGBYTES, PASSWORDMEMSZ);
+
+	if(screen_1_get_password(password) == 0)
 		return 0; /* user cancelled */
 
 	inptr = password;
@@ -202,6 +210,11 @@ static void screen_2_main_select_token(unsigned char* key)
 			if(pagoff >= ENTRIES_PER_PAGE)
 				pagoff -= ENTRIES_PER_PAGE;
 			break;
+		/*
+		 * if you get unreachable code here that is perfectly OK because
+		 * it is only needed if you have more than ENTRIES_PER_PAGE
+		 * entries.
+		 */
 		case kRight:
 			if(pagoff/ENTRIES_PER_PAGE <
 					NUM_DB_ENTRIES/ENTRIES_PER_PAGE)
