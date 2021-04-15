@@ -1,13 +1,3 @@
-/*
-
-TODO USING NEW HASHING LIBRARY SEEMS TO WORK -- NOW CLEAN UP THE MESS AND TEST EXTENSIVELY
-
-Next substeps:
- - Fix copyright screen
- - Enable pagination (test with 10 entries seemed to work!)
- - Write encryption aux tools
-*/
-
 #include <string.h>
 
 #include "ti84plus.h"
@@ -29,6 +19,12 @@ struct db_entry {
 };
 
 /* -- Constants -- */
+/*
+ * From experimentation:
+ *
+ * Calculator Model  Max. Entries
+ * TI 84+            12
+ */
 static const struct db_entry DATABASE[] = {
 	#include "keys.inc"
 };
@@ -45,6 +41,8 @@ static const struct db_entry DATABASE[] = {
 #define SCREEN_HEIGHT      8
 #define MAXPASSWORDLENGTH 14
 #define MD5BYTES          16
+
+#define ENTRIES_PER_PAGE   (SCREEN_HEIGHT - 1)
 
 /* -- Declarations -- */
 static unsigned char set_decryption_key(unsigned char* key);
@@ -158,8 +156,10 @@ static unsigned char screen_1_get_password(unsigned char* password)
 
 static void screen_2_main_select_token(unsigned char* key)
 {
+	unsigned char pagoff = 0;
 	unsigned char cursor = 0;
 	unsigned char i;
+	unsigned char entry;
 
 	while(1) {
 		callcalc_clear_lcd_full();
@@ -177,8 +177,9 @@ static void screen_2_main_select_token(unsigned char* key)
 			curRow = i;
 			curCol = 1;
 
-			if(i <= NUM_DB_ENTRIES)
-				callcalc_puts(DATABASE[i - 1].name);
+			entry = pagoff + i - 1;
+			if(entry < NUM_DB_ENTRIES)
+				callcalc_puts(DATABASE[entry].name);
 		}
 
 		switch(callcalc_get_key()) {
@@ -194,8 +195,17 @@ static void screen_2_main_select_token(unsigned char* key)
 		case kEnter:
 			if(cursor == 0)
 				screen_4_info();
-			else if(cursor <= NUM_DB_ENTRIES)
-				screen_3_totp(cursor - 1, key);
+			else if((pagoff + cursor) <= NUM_DB_ENTRIES)
+				screen_3_totp(pagoff + cursor - 1, key);
+			break;
+		case kLeft:
+			if(pagoff >= ENTRIES_PER_PAGE)
+				pagoff -= ENTRIES_PER_PAGE;
+			break;
+		case kRight:
+			if(pagoff/ENTRIES_PER_PAGE <
+					NUM_DB_ENTRIES/ENTRIES_PER_PAGE)
+				pagoff += ENTRIES_PER_PAGE;
 			break;
 		/* kDel */
 		default:
@@ -290,14 +300,14 @@ static void screen_4_info()
 
 	/* Cannot use last character because otherwise it would be scrolling */
 	const char* text[8] = {
-		"INF0", /* 1 */
-		"INF1", /* 2 */
-		"INF2", /* 3 */
-		"INF3", /* 4 */
-		"INF4", /* 5 */
-		"INF5", /* 6 */
-		"INF6", /* 7 */
-		"INF7", /* 8 */
+	/*       --------------- */
+		"MIT (sha1,hotp)", /* 1 */
+		"2020 Jacob Shin", /* 2 */
+		"2014 N.S.Vilche", /* 3 */
+		"z/konamiman.com", /* 4 */
+		"GPL2+ hmac-sha1", /* 6 */
+		"2005, 2006, FSF", /* 7 */
+		"-> is.gd/.....",  /* 8 */
 	};
 
 	callcalc_clear_lcd_full();

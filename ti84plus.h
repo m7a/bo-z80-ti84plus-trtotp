@@ -29,6 +29,8 @@ __sfr __at 0x8090 uMD5Update;
 	__asm__("rst  _rBR_CALL"); \
 	__asm__(".dw  _u" # ROUTINE);
 
+#define kRight 0x01
+#define kLeft  0x02
 #define kUp    0x03
 #define kDown  0x04
 #define kEnter 0x05
