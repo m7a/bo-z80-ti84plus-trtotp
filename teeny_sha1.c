@@ -37,9 +37,7 @@
  * To use the sha1digest() function either copy it into an existing
  * project source code file or include this file in a project and put
  * the declaration (example below) in the sources files where needed.
- */
-
-/*
+ *
  * sha1digest: https://github.com/CTrabant/teeny-sha1
  *
  * Calculate the SHA-1 value for supplied data buffer and generate a
@@ -117,8 +115,7 @@ void sha1digest(unsigned char *digest, unsigned char *data,
 
 			/* Copy byte-per byte from specified buffer */
 			while(didx < databytes && wcount >= 0) {
-				W[widx] += (((sha1u32)data[didx]) <<
-									wcount);
+				W[widx] += (((sha1u32)data[didx]) << wcount);
 				didx++;
 				wcount -= 8;
 			}

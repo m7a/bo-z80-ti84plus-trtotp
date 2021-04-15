@@ -31,12 +31,6 @@ static void hotp(unsigned char* key, unsigned char keylen,
 	unsigned char digest[20];
 	unsigned char bytes[8];
 
-	/*
-	bytes[0] = (count >> 56) & 0xff;
-	bytes[1] = (count >> 48) & 0xff;
-	bytes[2] = (count >> 40) & 0xff;
-	bytes[3] = (count >> 32) & 0xff;
-	*/
 	memset(bytes, 0, 4);
 	bytes[4] = (count >> 24) & 0xff;
 	bytes[5] = (count >> 16) & 0xff;
@@ -65,4 +59,5 @@ static void hotp(unsigned char* key, unsigned char keylen,
 	case 7:  *out = bin_code % 10000000;  break;
 	default: *out = bin_code % 1000000;   break;
 	}
+	/* *out = bin_code % 1000000; */
 }
