@@ -309,27 +309,28 @@ static void display_totp(unsigned char entryidx, unsigned char* key_decr,
 
 static void screen_4_info()
 {
-	unsigned char row = 7;
+	unsigned char row;
 
 	/* Cannot use last character because otherwise it would be scrolling */
 	const char* text[8] = {
-	/*       --------------- */
-		"MIT (sha1,hotp)", /* 1 */
-		"2020 Jacob Shin", /* 2 */
-		"2014 N.S.Vilche", /* 3 */
-		"z/konamiman.com", /* 4 */
-		"GPL2+ hmac-sha1", /* 6 */
-		"2005, 2006, FSF", /* 7 */
-		"-> is.gd/.....",  /* 8 */
+	/*       ---------------- */
+		"MIT (sha1,hotp)",  /* 1 */
+		"2020 Jacob Shin",  /* 2 */
+		"2014 N.S.Vilchez", /* 3 */
+		"/konamiman.com",   /* 4 */
+		"GPL2+ hmac-sha1",  /* 5 */
+		"2005, 2006, FSF",  /* 6 */
+		"-> https://is.gd", /* 7 */
+		"/..... (0:Back)",  /* 8 */
 	};
 
 	callcalc_clear_lcd_full();
 
-	do {
+	for(row = 0; row < (sizeof(text)/sizeof(char*)); row++) {
 		curCol = 0;
 		curRow = row;
 		callcalc_puts(text[row]);
-	} while(row-- != 0);
+	}
 
 	callcalc_get_key();
 }

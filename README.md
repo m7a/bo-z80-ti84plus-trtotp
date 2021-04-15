@@ -1,5 +1,5 @@
 ---
-section: 42
+section: 32
 x-masysma-name: ti84plus/z80/trtotp
 title: TOTP Program for TI 84+ Calculators
 date: 2021/04/15 18:43:42
@@ -13,8 +13,6 @@ x-masysma-copyright: |
   Copyright (c) 2021 Ma_Sys.ma.
   For further info send an e-mail to Ma_Sys.ma@web.de.
 ---
-In section 42 until released...
-
 Description
 ===========
 
@@ -22,7 +20,7 @@ This repository contains a proof-of-concept application demonstrating the
 feasability of running a TOTP authenticator application on a Texas Instruments
 TI-84+ programmable calculator.
 
-_TODO GIF-SCREENSHOT GOES HERE!_
+![Animation showing the basic usage](ti84plus_z80_trtotp_att/animdescr.gif)
 
 This implementation supports multiple (12 seems to be the maximum) TOTP seeds
 and allows them to be selected through an interactive menu displayed on the
@@ -42,10 +40,10 @@ This mostly stems from two unfortunate facts:
  2. There are not enough ressources to process modern crypto like AES or
     PBKDEF2.
 
-This proof of concept application propoes a sort of “might work” solution for
+This proof of concept application proposes a sort of “might work” solution for
 the second problem while leaving the first problem unresolved.
 
-TOTP seeds are worth protecting while stored at rest. An usual modern approach
+TOTP seeds are worth protecting while stored at rest. A usual modern approach
 to protect them with a password could be as follows: Use a password based key
 derivation function to derive an encryption key and then use a strong
 cryptographic primitive like AES-GCM to encrypt the data. This approach does not
@@ -89,14 +87,13 @@ assumptions, one can use even very fast hash functions because it is no longer
 necessary to protect from brute-force attacks against the password: Using
 brute-force, an adversary _will_ arrive at the correct password but without
 additional information about the TOTP's correctness, it will not be possible to
-tell which of the tried passwords was correct.
+tell which of the tried passwords was the correct one.
 
 The program presented here implements the generation of the one time pad from
 the user's password as follows:
 
-	_TODO ADDING A SALT IS THE MINIMUM WE COULD DO!_
-	First 16 bytes of OTP key = md5(Password)
-	Next 16 bytes of OTP key  = md5(previous 16 bytes of OTP key)
+	first 16 bytes of OTP key = md5(password || salt)
+	next  16 bytes of OTP key = md5(previous 16 bytes of OTP key)
 
 This is as insecure as it gets, but it is (1) fast enough to process on the
 calculator and (2) probably secure enough to drive off a script kiddie having
@@ -124,18 +121,148 @@ The following are needed to compile and use this tool:
 Configuration
 =============
 
-_TODO CONTINUE HERE_
+If you want to run the program as depicted in the screenshots, edit the
+following line from `Makefile`:
 
-; Configure your TOTP tokens here
-; Process this file with `secret_keys_to_inc.pl` to generate `keys.inc` file.
-; Recompile `trtotp.8xp` to send the changed keys to your calculator.
-; Supports at most 12 entries!
+	BINPACK8X = /data/main/dpr/rr/wpru/ti84plus/binpac8x/binpac8x.py
 
-Compilation
-===========
+Here, you need to give the path to your `binpac8x.py` (it is not included in
+the repository!) Next, invoke the compilation as follows:
+
+	make
+
+In case you want to try out the program using your own TOTP seeds, they need to
+be compiled in. This is a three-step process where data flows as follows:
+
+	|            secret_keys_to_inc.pl      compile+link
+	                       |                     |
+	+----------------+      \    +----------+     \    +------------+
+	| secretkeys.ini | --------> | keys.inc | -------> | trtotp.8xp |
+	+----------------+           +----------+          +------------+
+
+## `secretkeys.ini`
+
+This file configures the password to be used and the individual TOTP seeds.
+Here is a sample `secretkeys.ini` with two entries:
+
+~~~{.ini}
+[global]
+password=123456
+
+[Test Service]
+timestep=30
+digits=6
+key=GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ
+
+[Other Key]
+timestep=30
+digits=6
+key=JBSWY3DPEHPK3PXP
+~~~
+
+Section `global` configures the password to be used in plain text. Note that
+only uppercase letters and digits are supported. In the example, it's the
+classic `123456` (most common password on the Internet, DO NOT USE!)
+
+Subsequent sections are formatted as follows:
+
+	[Service Name]
+	timestep=TOTP-specific timestep configuration, typical.: 30
+	digits=Number of output digits expected, typical.: 6, others: 7, 8.
+	key=Base32-representation of the seed. Spaces are to be removed.
+
+While you can define an arbitrary number of services this way, remember the
+maximum of 12 entries before the calculator's memory runs out.
+
+## `secret_keys_to_inc.pl`
+
+Having prepared the `secretkeys.ini` file, it needs to be transformed into an
+“include” file that conforms to the C syntax. At this stage, the TOTP seeds
+are encrypted using the password and the (not very secure!) scheme described
+before.
+
+To simplify this process, script `secret_keys_to_inc.pl` can be used:
+
+	./secret_keys_to_inc.pl secretkeys.ini > keys.inc
+
+NOTE: If you want to customize the “salt” used for hashing your passwords -- it
+is recommendable to do this from a security point of view -- edit files
+`secret_keys_to_inc.pl` and `trtotp.c` and replace the following bytes by
+your own 32 random bytes:
+
+	0xc5, 0xf7, 0x40, 0xd8, 0x1f, 0xda, 0x49, 0xb6,
+	0xe6, 0x1b, 0x5c, 0xee, 0xbd, 0x29, 0xbb, 0xa5,
+	0x89, 0x99, 0x93, 0x8f, 0x4b, 0x8b, 0xca, 0x40,
+	0xbb, 0x5a, 0xb4, 0x05, 0x1b, 0x9a, 0xe7, 0x4d
+
+In case you struggle to get something random enough, try `xxd < /dev/urandom`.
+Of course, having changed the random bytes, it is necessary to re-run the
+`secret_keys_to_inc.pl` invocation to encrypt the TOTP seeds according to the
+changed “encryption scheme”.
+
+Afterwards, compile and test the TOTP application :)
+
+Compilation Details
+===================
+
+In case you do not want to use the `Makefile`, here are the individual steps for
+compilation:
+
+	# Optional step: Encrypt and provide TOTP seeds
+	./secret_keys_to_inc.pl secretkeys.ini > keys.inc
+	
+	# Compile assembly startup routine
+	sdasz80 -p -g -o tios_crt0.rel tios_crt0.s
+	
+	# Compile application
+	sdcc --no-std-crt0 --code-loc 40347 --data-loc 0 --std-sdcc99 -mz80 \
+		--opt-code-size --reserve-regs-iy -o trtotp.ihx tios_crt0.rel \
+		trtotp.c
+	
+	# Convert .ihx -> .bin
+	objcopy -I ihex -O binary trtotp.ihx trtotp.bin
+	
+	# Convert .bin -> .8xp
+	binpac8x.py trtotp.bin
+
+Afterwards, transfer `trtotp.8xp` to your calculator (or an emulator --
+safety first!)
 
 Usage
 =====
+
+In case it is not obvious from the screenshots already, here is a short
+usage guide from the “user's perspective”.
+
+First, start the program on the calculator:
+
+ * Press 2nd->CATALOG, Select `Asm(`, Press ENTER.
+ * Press PRGM, Select `TRTOTP`, Press ENTER.
+ * Press ENTER to evaluate the input line
+
+The program will ask you to enter the password. Use number keys or ALPHA-A,
+ALPHA-B etc. for letters. After giving the password, press ENTER.
+
+The next screen shows the list of menu items available. Use UP/DOWN arrows to
+select the item of interest and press ENTER to compute the TOTP code for it.
+
+The first menu item is special: It displays a decimal number that is the first
+byte of the key used to decrypt the TOTP seeds. In case you mistyped your
+password, this value will differ from the one you'd usually observe for the
+correct password. This is the only immediate indicator as to whether the
+entered password was correct on the previous screen.
+
+Press DEL to exit the program.
+
+If you are on the screen that displays the current TOTP code, you can update
+the displayed code by pressing `1` and return to the previous menu item with
+`0`.
+
+Do not leave the application open for long: Not only is it a security issue.
+There is also a memory leak whenever an application is quit due to an event
+like auto-off or manually turning the calculator off, its memory is not freed.
+Given that this application is quite memory hungry, this will usually mean that
+it is not possible to run it again until the memory is reset entirely!
 
 License Information
 ===================
@@ -180,4 +307,3 @@ I am not the first one to have this idea, btw:
  * Another assembler <https://packages.debian.org/buster/z80asm>
  * Another compiler <https://z88dk.org/site/>
  * For a more capable TI-84+ _CE_: <https://github.com/CE-Programming/toolchain>
- * _TODO THERE IS MORE, MUCH MORE_
