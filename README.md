@@ -1,12 +1,12 @@
 ---
 section: 32
 x-masysma-name: ti84plus/z80/trtotp
-title: TOTP Program for TI 84+ Calculators
+title: TOTP Program for TI-84+ Calculators
 date: 2021/04/15 18:43:42
 lang: en-US
 author: ["Linux-Fan, Ma_Sys.ma (Ma_Sys.ma@web.de)"]
 keywords: ["ti", "calculator", "totp", "crypto", "z80"]
-x-masysma-version: 1.0.0
+x-masysma-version: 1.0.1
 x-masysma-website: https://masysma.lima-city.de/32/ti84plus_z80_trtotp.xhtml
 x-masysma-repository: https://www.github.com/m7a/bo-z80-ti84plus-trtotp
 x-masysma-copyright: |
@@ -299,11 +299,28 @@ See Also
 ## Similar Project
 
 I am not the first one to have this idea, btw:
-<https://github.com/jshin313/ti-authenticator>
+<https://github.com/jshin313/ti-authenticator>,
+introductory post:
+<https://www.cemetech.net/forum/viewtopic.php?t=16823>
 
 ## Resources on Programming the TI 84+ and related
 
+ * Tutorial for programming the calculator using SDCC:
+   <https://www.cemetech.net/forum/viewtopic.php?t=7087>
+ * Table of functions (much better than relying on the `.inc` file alone!)
+   <https://wikiti.brandonw.net/index.php?title=Category:83Plus:BCALLs:By_Name>
  * GNU Assembler for z80 <https://packages.debian.org/buster/binutils-z80>
  * Another assembler <https://packages.debian.org/buster/z80asm>
  * Another compiler <https://z88dk.org/site/>
- * For a more capable TI-84+ _CE_: <https://github.com/CE-Programming/toolchain>
+ * For a more capable TI-84+ _CE_:
+   <https://github.com/CE-Programming/toolchain>, Introduction page
+   <https://codewalr.us/index.php?topic=1050.0>
+ * Z80 Assembly Tutorial for TI-83+:
+   <https://tutorials.eeems.ca/ASMin28Days/lesson/toc.html>
+ * Z80 calling convention for SDCC
+   <http://bricologica.com/projects/z80/2015/08/17/z-80-code-generation-with-sdcc.html>
+
+## Resources regarding TOTP
+
+ * Datetime to Unix timestamp routine:
+   <https://github.com/rsyslog/rsyslog/blob/master/runtime/datetime.c>
