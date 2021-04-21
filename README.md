@@ -26,6 +26,12 @@ This implementation supports multiple (12 seems to be the maximum) TOTP seeds
 and allows them to be selected through an interactive menu displayed on the
 calculator. In terms of algorithms, _only_ TOTP using a HMAC-SHA-1 is supported.
 
+WARNING: Depending on what other applications you want to load on the
+calculator, the number of TOTP tokens supported can be much smaller. You can
+notice out of memory conditions by the calculator displaying `ERR:INVALID` upon
+trying to start the program or spontaneously resetting after terminating the
+application.
+
 Security Considerations
 =======================
 
