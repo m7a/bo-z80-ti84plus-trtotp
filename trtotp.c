@@ -122,7 +122,7 @@ static unsigned char screen_1_get_password(unsigned char* password)
 	curCol = 0;
 	callcalc_puts("Ma_Sys.ma TRTOTP");
 	/* optimized away: curRow = 2; curCol = 0; */
-	callcalc_puts("v1.0.0   04/2021");
+	callcalc_puts("v1.0.1   09/2021");
 	/* optimized away: curRow = 3; curCol = 0;*/
 	callcalc_puts("Ma_Sys.ma@web.de");
 
@@ -321,7 +321,7 @@ static void screen_4_info()
 		"GPL2+ hmac-sha1",  /* 5 */
 		"2005, 2006, FSF",  /* 6 */
 		"-> https://is.gd", /* 7 */
-		"/..... (0:Back)",  /* 8 */
+		"/nqUeRL  0:Back",  /* 8 */
 	};
 
 	callcalc_clear_lcd_full();
