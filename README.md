@@ -7,7 +7,7 @@ lang: en-US
 author: ["Linux-Fan, Ma_Sys.ma (Ma_Sys.ma@web.de)"]
 keywords: ["ti", "calculator", "totp", "crypto", "z80"]
 x-masysma-version: 1.0.1
-x-masysma-website: https://masysma.lima-city.de/32/ti84plus_z80_trtotp.xhtml
+x-masysma-website: https://masysma.net/32/ti84plus_z80_trtotp.xhtml
 x-masysma-repository: https://www.github.com/m7a/bo-z80-ti84plus-trtotp
 x-masysma-copyright: |
   Copyright (c) 2021 Ma_Sys.ma.
